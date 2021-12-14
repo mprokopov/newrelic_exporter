@@ -10,9 +10,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	// "github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
-	// "github.com/prometheus/common/promlog"
 )
 
 func main() {
@@ -21,9 +19,10 @@ func main() {
 	flag.StringVar(&configFile, "config", "newrelic_exporter.yml", "Config file path. Defaults to 'newrelic_exporter.yml'")
 	flag.Parse()
 
-	log.SetLevel(log.DebugLevel)
-
 	cfg, err := config.GetConfig(configFile)
+
+	level, err := log.ParseLevel(cfg.LoggerLevel)
+	log.SetLevel(level)
 
 	api := newrelic.NewAPI(cfg)
 
