@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/prometheus/log"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"time"
@@ -26,6 +26,8 @@ type Config struct {
 
 	// Debugging settings
 	DebugProxyAddress string `yaml:"debug.proxy-address"`
+
+	LoggerLevel string `yaml:"log.level"`
 }
 
 type Application struct {
@@ -46,6 +48,8 @@ func GetConfig(path string) (Config, error) {
 	}
 
 	log.Debugf("Config loaded: %v", config)
+
+	log.Infof("Logger level: %s", config.LoggerLevel)
 
 	return config, err
 }

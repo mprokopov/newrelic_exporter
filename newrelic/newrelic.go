@@ -4,14 +4,14 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/antonholmquist/jason"
-	"github.com/prometheus/log"
+	log "github.com/sirupsen/logrus"
 	"github.com/tomnomnom/linkheader"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
-	"camino.ru/newrelic_exporter/config"
 	"encoding/json"
+	"newrelic_exporter/config"
 	"strconv"
 	"sync"
 	"time"
@@ -93,7 +93,8 @@ func NewAPI(c config.Config) *API {
 func (api *API) GetApplications() ([]Application, error) {
 	log.Infof("Requesting application list from %s.", api.server.String())
 
-	body, err := api.req(fmt.Sprintf("/v2/%s.json", api.service), "")
+	body, err := api.req("/v2/applications.json", fmt.Sprintf("filter[ids]=%s", api.service))
+	// body, err := api.req(fmt.Sprintf("/v2/%s.json", "applications"), "")
 	if err != nil {
 		log.Error("Error getting application list: ", err)
 		return nil, err
@@ -124,7 +125,9 @@ func (api *API) GetApplications() ([]Application, error) {
 
 func (api *API) GetMetricNames(appID int) ([]MetricName, error) {
 	log.Infof("Requesting metrics names for application id %d with %v filters", appID, len(cfg.NRMetricFilters))
-	path := fmt.Sprintf("/v2/%s/%s/metrics.json", api.service, strconv.Itoa(appID))
+	path := fmt.Sprintf("/v2/applications/%s/metrics.json", api.service)
+
+	// log.Debugf("Path: %s", path)
 
 	channel := make(chan MetricName)
 	metricNames := make([]MetricName, 0)
@@ -144,6 +147,8 @@ func (api *API) GetMetricNames(appID int) ([]MetricName, error) {
 
 				params := url.Values{}
 				params.Add("name", filter)
+
+				log.Debugf("params %v ", params.Encode())
 
 				body, err := api.req(path, params.Encode())
 				if err != nil {
@@ -200,7 +205,7 @@ func (api *API) GetMetricNames(appID int) ([]MetricName, error) {
 }
 
 func (api *API) GetMetricData(appId int, names []MetricName, from time.Time, to time.Time) ([]MetricData, error) {
-	path := fmt.Sprintf("/v2/%s/%s/metrics/data.json", api.service, strconv.Itoa(appId))
+	path := fmt.Sprintf("/v2/%s/%s/metrics/data.json", "applications", strconv.Itoa(appId))
 
 	var valueNamesList []string
 
@@ -324,7 +329,7 @@ func (api *API) req(path string, params string) ([]byte, error) {
 	}
 	u.RawQuery = params
 
-	//log.Debug("Making API call: ", u.String())
+	log.Debug("Making API call: ", u.String())
 
 	req := &http.Request{
 		Method: "GET",

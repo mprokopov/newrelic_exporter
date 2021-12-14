@@ -2,14 +2,17 @@ package main
 
 import (
 	"flag"
+	// "github.com/go-kit/kit/log/level"
 	"net/http"
-
-	"camino.ru/newrelic_exporter/config"
-	"camino.ru/newrelic_exporter/exporter"
-	"camino.ru/newrelic_exporter/newrelic"
+	"newrelic_exporter/config"
+	"newrelic_exporter/exporter"
+	"newrelic_exporter/newrelic"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	// "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+	// "github.com/prometheus/common/promlog"
 )
 
 func main() {
@@ -17,6 +20,8 @@ func main() {
 
 	flag.StringVar(&configFile, "config", "newrelic_exporter.yml", "Config file path. Defaults to 'newrelic_exporter.yml'")
 	flag.Parse()
+
+	log.SetLevel(log.DebugLevel)
 
 	cfg, err := config.GetConfig(configFile)
 
@@ -26,7 +31,7 @@ func main() {
 
 	prometheus.MustRegister(exp)
 
-	http.Handle(cfg.MetricPath, prometheus.Handler())
+	http.Handle(cfg.MetricPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 <head><title>NewRelic exporter</title></head>
@@ -38,10 +43,10 @@ func main() {
 `))
 	})
 
-	log.Printf("Listening on %s.", cfg.ListenAddress)
+	log.Infof("Listening on %s.", cfg.ListenAddress)
 	err = http.ListenAndServe(cfg.ListenAddress, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Print("HTTP server stopped.")
+	log.Info("HTTP server stopped.")
 }

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/log"
+	log "github.com/sirupsen/logrus"
 
-	"camino.ru/newrelic_exporter/config"
-	"camino.ru/newrelic_exporter/newrelic"
+	"newrelic_exporter/config"
+	"newrelic_exporter/newrelic"
 )
 
 // Namespace for metrics
