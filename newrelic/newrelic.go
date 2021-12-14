@@ -18,7 +18,7 @@ import (
 )
 
 // Module version
-const Version = "0.3b"
+const Version = "0.4b"
 
 // User-Agent string
 const UserAgent = "Prometheus-NewRelic-Exporter/" + Version
